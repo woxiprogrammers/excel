@@ -39,6 +39,7 @@
         <div class="container">
             <div class="content">
                 <div class="title">Laravel 5</div>
+                <a href="{{URL::to('/generate')}}" ><button>generate</button></a>
             </div>
         </div>
     </body>
