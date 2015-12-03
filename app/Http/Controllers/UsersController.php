@@ -15,10 +15,14 @@ class UsersController extends Controller
      *
      * @return \Illuminate\Http\Response
      * http://stackoverflow.com/questions/24740108/phpexcel-multiple-dropdown-list-that-dependent
+     * $objWriter->save('php://output');
+     * https://gist.github.com/r-sal/4313500
+     * http://www.tisuchi.com/use-phpexcel-library/
      */
     public function index()
     {
         $objPHPExcel = new \PHPExcel();
+        $objPHPExcel->createSheet(1);
         $objPHPExcel->getProperties()
             ->setCreator('Sagar Acharya')
             ->setTitle('PHPExcel Demo')
@@ -28,40 +32,43 @@ class UsersController extends Controller
             ->setKeywords('excel php office phpexcel lakers')
             ->setCategory('programming');
 
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("A1", "UK");
+        $objPHPExcel->setActiveSheetIndex(1);
+
+
+        /*$objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("A1", "UK");
         $objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("A2", "USA");
 
         $objPHPExcel->addNamedRange(
             new \PHPExcel_NamedRange(
                 'countries',
-                $objPHPExcel->getActiveSheet('Worksheet 1'),
+                $objPHPExcel->getActiveSheet('Worksheet 2'),
                 'A1:A2'
             )
-        );
+        );*/
+        $data = implode (", ", array('UK,USA'));
 
-        $objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("B1", "London");
-        $objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("B2", "Birmingham");
-        $objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("B3", "Leeds");
+        $objPHPExcel->getActiveSheet('Worksheet 2')->SetCellValue("B1", "London");
+        $objPHPExcel->getActiveSheet('Worksheet 2')->SetCellValue("B2", "Birmingham");
+        $objPHPExcel->getActiveSheet('Worksheet 2')->SetCellValue("B3", "Leeds");
         $objPHPExcel->addNamedRange(
             new \PHPExcel_NamedRange(
                 'UK',
-                $objPHPExcel->getActiveSheet('Worksheet 1'),
+                $objPHPExcel->getActiveSheet('Worksheet 2'),
                 'B1:B3'
             )
         );
 
-        $objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("C1", "Atlanta");
-        $objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("C2", "New York");
-        $objPHPExcel->getActiveSheet('Worksheet 1')->SetCellValue("C3", "Los Angeles");
+        $objPHPExcel->getActiveSheet('Worksheet 2')->SetCellValue("C1", "Atlanta");
+        $objPHPExcel->getActiveSheet('Worksheet 2')->SetCellValue("C2", "New York");
+        $objPHPExcel->getActiveSheet('Worksheet 2')->SetCellValue("C3", "Los Angeles");
         $objPHPExcel->addNamedRange(
             new \PHPExcel_NamedRange(
                 'USA',
-                $objPHPExcel->getActiveSheet('Worksheet 1'),
+                $objPHPExcel->getActiveSheet('Worksheet 2'),
                 'C1:C3'
             )
         );
-
+        $objPHPExcel->setActiveSheetIndex(0);
         $objValidation = $objPHPExcel->getActiveSheet()->getCell('A1')->getDataValidation();
         $objValidation->setType( \PHPExcel_Cell_DataValidation::TYPE_LIST );
         $objValidation->setErrorStyle( \PHPExcel_Cell_DataValidation::STYLE_INFORMATION );
@@ -73,7 +80,7 @@ class UsersController extends Controller
         $objValidation->setError('Value is not in list.');
         $objValidation->setPromptTitle('Pick from list');
         $objValidation->setPrompt('Please pick a value from the drop-down list.');
-        $objValidation->setFormula1("=countries"); //note this!
+        $objValidation->setFormula1(".$data."); //note this!
 
 
         $objValidation = $objPHPExcel->getActiveSheet()->getCell('B1')->getDataValidation();
@@ -92,6 +99,7 @@ class UsersController extends Controller
         $objWriter = new \PHPExcel_Writer_Excel2007($objPHPExcel);
         $name = strtotime(Carbon::now());
         $name = $name.'.xlsx';
+
         $objWriter->save($path.$name);
         chmod($path.$name,0777);
         //dd($objPHPExcel);
@@ -182,10 +190,91 @@ class UsersController extends Controller
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
+     * http://stackoverflow.com/questions/18377976/read-the-list-of-options-in-a-drop-down-list-phpexcel
+     * fully functional code for multiple dropdown list
      */
-    public function show($id)
+    public function show()
     {
-        //
+        $objPHPExcel = new \PHPExcel();
+        $newSheet=$objPHPExcel->createSheet();
+        $objPHPExcel->setActiveSheetIndex(1);
+        $newSheet->setTitle("CountriesList");
+
+        $objPHPExcel->setActiveSheetIndex(1)
+            ->SetCellValue("A1", "UK")
+            ->SetCellValue("A2", "USA");
+            /*->SetCellValue("A3", "CANADA")
+            ->SetCellValue("A4", "INDIA")
+            ->SetCellValue("A5", "POLAND")
+            ->SetCellValue("A6", "ENGLAND");// Drop down data in sheet 1*/
+        $objPHPExcel->setActiveSheetIndex(1)
+            ->SetCellValue("B1", "London")
+            ->SetCellValue("B2", "Birmingham")
+            ->SetCellValue("B3", "Leeds");
+        $objPHPExcel->setActiveSheetIndex(1)
+            ->SetCellValue("C1", "LA")
+            ->SetCellValue("C2", "NY");
+        $objPHPExcel->addNamedRange(
+            new \PHPExcel_NamedRange(
+                'countries',
+                $objPHPExcel->setActiveSheetIndex(1),
+                'A1:A6'
+            )
+        );
+        $objPHPExcel->addNamedRange(
+            new \PHPExcel_NamedRange(
+                'UK',
+                $objPHPExcel->setActiveSheetIndex(1),
+                'B1:B3'
+            )
+        );
+        $objPHPExcel->addNamedRange(
+            new \PHPExcel_NamedRange(
+                'USA',
+                $objPHPExcel->setActiveSheetIndex(1),
+                'C1:C2'
+            )
+        );
+        $objPHPExcel->setActiveSheetIndex(0)->SetCellValue("A1", "UK");
+
+        $objPHPExcel->setActiveSheetIndex(0);// Drop down in sheet 0
+        $objValidation = $objPHPExcel->getSheet(0)->getCell('A1')->getDataValidation();
+        $objValidation->setType( \PHPExcel_Cell_DataValidation::TYPE_LIST );
+        $objValidation->setErrorStyle( \PHPExcel_Cell_DataValidation::STYLE_INFORMATION );
+        $objValidation->setAllowBlank(false);
+        $objValidation->setShowInputMessage(true);
+        $objValidation->setShowErrorMessage(true);
+        $objValidation->setShowDropDown(true);
+        $objValidation->setErrorTitle('Input error');
+        $objValidation->setError('Value is not in list.');
+        $objValidation->setFormula1("=countries");
+        $objPHPExcel->getActiveSheet()->getCell('A1')->setDataValidation($objValidation);
+
+
+        //$objPHPExcel->setActiveSheetIndex(0)->SetCellValue("B1", "London");
+
+        $objPHPExcel->setActiveSheetIndex(0);// Drop down in sheet 0
+        $objValidation = $objPHPExcel->getSheet(0)->getCell('B1')->getDataValidation();
+        $objValidation->setType( \PHPExcel_Cell_DataValidation::TYPE_LIST );
+        $objValidation->setErrorStyle( \PHPExcel_Cell_DataValidation::STYLE_INFORMATION );
+        $objValidation->setAllowBlank(false);
+        $objValidation->setShowInputMessage(true);
+        $objValidation->setShowErrorMessage(true);
+        $objValidation->setShowDropDown(true);
+        $objValidation->setErrorTitle('Input error');
+        $objValidation->setError('Value is not in list.');
+        $objValidation->setFormula1('=INDIRECT($A$1)');
+        $objPHPExcel->getActiveSheet()->getCell('B1')->setDataValidation($objValidation);
+
+
+        $path = $_SERVER['DOCUMENT_ROOT'].'/uploads/';
+        $objWriter = new \PHPExcel_Writer_Excel2007($objPHPExcel);
+        $name = strtotime(Carbon::now());
+        $name = $name.'.xlsx';
+
+        $objWriter->save($path.$name);
+        chmod($path.$name,0777);
+
     }
 
     /**
