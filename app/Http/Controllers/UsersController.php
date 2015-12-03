@@ -235,6 +235,21 @@ class UsersController extends Controller
                 'C1:C2'
             )
         );
+
+        /* Lock Cells */
+
+        $objPHPExcel->getActiveSheet()->getProtection()->setSheet(true);    // Needs to be set to true in order to
+
+        $objPHPExcel->getActiveSheet()
+            ->getStyle('A1:A2', 'B1:B3','C1:C2')
+            ->getProtection()
+            ->setLocked(
+                \PHPExcel_Style_Protection::PROTECTION_PROTECTED
+            );
+        
+        /* End Lock */
+
+
         $objPHPExcel->setActiveSheetIndex(0)->SetCellValue("A1", "UK");
 
         $objPHPExcel->setActiveSheetIndex(0);// Drop down in sheet 0
